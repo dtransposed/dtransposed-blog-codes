@@ -147,8 +147,9 @@ for batch in range(input_to_keras.shape[0]):
 result_custom=LSTM_layer_3.output_array
 result_keras=keras_model.model.predict(input_to_keras)
 
-plt.plot(result_custom, 'b')
-plt.plot(result_keras, 'r')
+plt.plot(result_custom, label='Custom-made LSTM')
+plt.plot(result_keras, label='Keras LSTM')
 plt.legend(loc='best')
+plt.title('Comparison of two methods')
 plt.show()
 
