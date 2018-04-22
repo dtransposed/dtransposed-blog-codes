@@ -1,29 +1,20 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Apr  6 12:26:00 2018
-
-@author: dbogu
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.models import Sequential, load_model
-from keras.layers import Dense
-from keras.layers import LSTM
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
 
 ## Define parameters ##
 
-timesteps = 30      # Defines how long in time each batch is; one time step is one point of observation in the batch.
-no_of_batches = 200   # A batch is an input sequence to the network; it is comprised of one or more points of observation.
-no_of_layers = 3    # Number of hidden LSTM layers in the network.
-no_of_units = 20    # Number of units in every LSTM layer.
+timesteps = 30          # Defines how long in time each batch is; one time step is one point of observation in the batch.
+no_of_batches = 200     # A batch is an input sequence to the network; it is comprised of one or more points of observation.
+no_of_layers = 3        # Number of hidden LSTM layers in the network.
+no_of_units = 20        # Number of units in every LSTM layer.
 
 ## Define weights matrices ##
-
 '''
-This function allows us to extract weights matrices in the form of numpy arrays from the Keras model. 
+This function allows us to extract weights matrices in form of numpy arrays from a model in Keras. 
 Key of the dictionary - name of a matrix
-e.g LSTM1_i_W is the matrix W of the input gate for the first LSTM layer.
+e.g. LSTM1_i_W is the matrix W of the input gate for the first LSTM layer.
 Value of the key - numpy array associated with the matrix
 '''
 
@@ -47,11 +38,10 @@ def import_weights(no_of_layers, hidden_units):
     weights_dictionary["W_dense"] = model_weights[layer_no]
     weights_dictionary["b_dense"] = model_weights[layer_no + 1]
     
-## Define LSTM networks ##
-
+## Define LSTM network ##
 '''
 Keras_LSTM creates an LSTM network (Keras implementation)
-custom_LSTM creates a single LSTM layer ('under the hood' implementation)
+custom_LSTM creates a single LSTM layer ('custom-made' implementation)
 '''
 
 class LSTM_Keras(object):  
@@ -105,11 +95,8 @@ class custom_LSTM(object):
     
     def output_array_append(self):
         self.output_array.append(self.result[0])
-        
-    
-    
-## Define dense layer ##
-        
+            
+## Define dense layer ##     
 '''
 This function takes the output from the last LSTM layer and returns the result from the neural network.
 '''
@@ -120,8 +107,8 @@ def output_calc(x, weights, bias):
 
 ## Main ##
     
-keras_model = LSTM_Keras(no_of_units,timesteps)                                 #create a neural network in Keras
-model_weights = keras_model.model.get_weights()                                 #get weights of a network from the neural network in Keras
+keras_model = LSTM_Keras(no_of_units,timesteps)                                 #create a model in Keras
+model_weights = keras_model.model.get_weights()                                 #get weights of a network from the model
 weights_dictionary = {}                                                         #create an empty dictionary
 import_weights(no_of_layers, no_of_units)                                       #fill the dictionary with weights matrices from Keras
 
@@ -129,20 +116,21 @@ LSTM_layer_1 = custom_LSTM(timesteps, no_of_units)
 LSTM_layer_2 = custom_LSTM(timesteps, no_of_units)
 LSTM_layer_3 = custom_LSTM(timesteps, no_of_units)                              #create three LSTM layers
 
-batch_to_keras = np.random.randint(100, size = (no_of_batches, timesteps, 1))   #input to Keras LSTM 
+input_to_keras = np.random.randint(100, size = (no_of_batches, timesteps, 1))   #input is a sequence of randomly initialized samples
 
 ## Prediction step using custom-made LSTM ##
 
-for batch in range(batch_to_keras.shape[0]):
-    print("batch no ",batch)
+for batch in range(input_to_keras.shape[0]):
+
     LSTM_layer_1.reset_state()
     LSTM_layer_2.reset_state()
     LSTM_layer_3.reset_state()
-    for timestep in range(batch_to_keras.shape[1]):
+    
+    for timestep in range(input_to_keras.shape[1]):
         
-        output_from_LSTM_1 = LSTM_layer_1.layer(batch_to_keras[batch,timestep,:], weights_dictionary['LSTM1_f_W'], weights_dictionary['LSTM1_i_W'], weights_dictionary['LSTM1_o_W'], weights_dictionary['LSTM1_c_W'],
-                                                                              weights_dictionary['LSTM1_f_U'], weights_dictionary['LSTM1_i_U'], weights_dictionary['LSTM1_o_U'], weights_dictionary['LSTM1_c_U'],
-                                                                              weights_dictionary['LSTM1_f_b'], weights_dictionary['LSTM1_i_b'], weights_dictionary['LSTM1_o_b'], weights_dictionary['LSTM1_c_b'])
+        output_from_LSTM_1 = LSTM_layer_1.layer(input_to_keras[batch,timestep,:], weights_dictionary['LSTM1_f_W'], weights_dictionary['LSTM1_i_W'], weights_dictionary['LSTM1_o_W'], weights_dictionary['LSTM1_c_W'],
+                                                                                  weights_dictionary['LSTM1_f_U'], weights_dictionary['LSTM1_i_U'], weights_dictionary['LSTM1_o_U'], weights_dictionary['LSTM1_c_U'],
+                                                                                  weights_dictionary['LSTM1_f_b'], weights_dictionary['LSTM1_i_b'], weights_dictionary['LSTM1_o_b'], weights_dictionary['LSTM1_c_b'])
         
         output_from_LSTM_2 = LSTM_layer_2.layer(output_from_LSTM_1, weights_dictionary['LSTM2_f_W'], weights_dictionary['LSTM2_i_W'], weights_dictionary['LSTM2_o_W'], weights_dictionary['LSTM2_c_W'],
                                                                     weights_dictionary['LSTM2_f_U'], weights_dictionary['LSTM2_i_U'], weights_dictionary['LSTM2_o_U'], weights_dictionary['LSTM2_c_U'],
@@ -157,7 +145,7 @@ for batch in range(batch_to_keras.shape[0]):
 
 ## Compare custom-made implementation  ##
 result_custom=LSTM_layer_3.output_array
-result_keras=keras_model.model.predict(batch_to_keras)
+result_keras=keras_model.model.predict(input_to_keras)
 
 plt.plot(result_custom, 'b')
 plt.plot(result_keras, 'r')
