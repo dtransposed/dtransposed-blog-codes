@@ -172,7 +172,7 @@ class SequentialBayes:
 
 
 def run_sequential_bayes(create_gif=True):
-    samples_in_batch = 1        # batch size
+    samples_in_batch = 50        # batch size
     no_iterations = 20          # no of learning sequences
     samples_precision = 1000    # decimal precision of a sample
 
@@ -191,11 +191,12 @@ def run_sequential_bayes(create_gif=True):
     if create_gif:
         gif_types = ['Data_Space', 'Likelihood', 'Prior_Posterior']
         for gif_type in gif_types:
-            image_names = [gif_type + '-{}.png'.format(i) for i in range(no_iterations)]
-            images = []
-            for i in image_names:
-                images.append(imageio.imread(i))
-            imageio.mimsave('{}.gif'.format(gif_type), images, duration =0.3)
+            with imageio.get_writer('{}.gif'.format(gif_type), mode='I') as writer:
+                image_names = [gif_type + '-{}.png'.format(i) for i in range(no_iterations)]
+                for i in image_names:
+                    image = imageio.imread(i)
+                    writer.append_data(image)
+        
 
 
 if __name__ == "__main__":
